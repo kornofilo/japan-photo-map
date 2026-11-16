@@ -758,7 +758,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
       <button id="b-prev" type="button" aria-label="Día anterior">← Día</button>
       <button id="b-next" type="button" aria-label="Día siguiente">Día →</button>
       <button id="b-all" type="button">Ver todo</button>
-      <button id="b-base" type="button">Mapa: calles</button>
+      <button id="b-base" type="button">Mapa: OpenStreetMap</button>
     </div>
     <div class="note" id="note">El mapa de fondo no pudo cargarse. Revisa tu conexión o prueba otro fondo con el botón Mapa.</div>
   </main>
@@ -897,7 +897,6 @@ map.setView([36.5,136],5);
 map.createPane('base').style.zIndex=150;
 const outline=L.geoJSON({type:'Feature',geometry:JAPAN},{pane:'base',interactive:false,style:()=>({color:css('--line'),weight:1,fillColor:css('--land'),fillOpacity:1})}).addTo(map);
 const bases=[
-  ['calles',L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap, © CARTO'})],
   ['OpenStreetMap',L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'})],
   ['satélite',L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Imágenes © Esri, Maxar, Earthstar Geographics'})],
   ['relieve',L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:17,attribution:'© OpenStreetMap, SRTM · © OpenTopoMap (CC-BY-SA)'})]
