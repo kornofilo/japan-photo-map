@@ -4,6 +4,6 @@ Mapa interactivo de mi viaje a Japón (28 de octubre – 16 de noviembre de 2024
 
 **Ver el mapa:** https://kornofilo.github.io/japan-photo-map/
 
-- Una sola página (`index.html`) con [Leaflet](https://leafletjs.com/); fondos de CARTO, OpenStreetMap, Esri y OpenTopoMap.
+- Una sola página (`index.html`) con [Leaflet](https://leafletjs.com/); fondos de OpenStreetMap, Esri y OpenTopoMap.
 - Las fotos se ubican por fecha y hora (la cámara no guarda GPS) y se enlazan a Google Drive.
 - El trazo de la ruta es aproximado: líneas rectas entre estaciones.
