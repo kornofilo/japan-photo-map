@@ -16,6 +16,7 @@ PLACES = {
   'hakodate':  ('Hakodate', 41.7687, 140.7288),
   'morioka':   ('Morioka', 39.7036, 141.1527),
   'kakunodate':('Kakunodate', 39.5997, 140.5617),
+  'aizu':      ('Aizu-Wakamatsu · Tsuruga-jō', 37.4877, 139.9297),
   'niigata':   ('Niigata', 37.9161, 139.0364),
   'kioto':     ('Kioto', 35.0116, 135.7681),
   'arashiyama':('Arashiyama, Kioto', 35.0094, 135.6668),
@@ -81,8 +82,8 @@ DAYS = [
  ('2024-10-28', 'Llegada a Tokio', ['f1', 'l01'], 'Aterrizaje en Haneda por la noche y primera noche en Asakusa. La cámara seguía en hora de Panamá, así que sus fotos del templo Sensō-ji son de la madrugada del 29.'),
  ('2024-10-29', 'Tokio → Hakodate', ['l02', 'l03', 'l04'], 'Primer día del Japan Rail Pass: Tōhoku y Hokkaidō Shinkansen bajo el estrecho de Tsugaru hasta Hokkaidō. Atardecer y noche en el fuerte Goryōkaku.'),
  ('2024-10-30', 'Hakodate → Kakunodate → Morioka', ['l05', 'l06', 'l07'], 'Mañana en las cuestas de Motomachi. Hayabusa 22 de Shin-Hakodate-Hokuto (10:53) a Morioka (12:45), Komachi 23 a Kakunodate (14:35 a 15:25), el barrio samurái, y vuelta en el Komachi 40 (17:18 a 18:14).'),
- ('2024-10-31', 'Morioka', [], 'Día completo en Morioka, con el santuario Sakurayama.'),
- ('2024-11-01', 'Morioka → Niigata', ['l08', 'l09'], 'Día de tren. Las fotos de la mañana son por la ventana. No hay reserva del trayecto: el trazo por Ōmiya es la ruta más probable en shinkansen.'),
+ ('2024-10-31', 'Morioka → Aizu-Wakamatsu', ['l08', 'l08b'], 'Mañana en Morioka, con el santuario Sakurayama. Shinkansen hasta Kōriyama y la línea Ban\'etsu Oeste hasta Aizu-Wakamatsu: tarde en el castillo Tsuruga-jō, con los cascos samuráis y la historia del Byakkotai.'),
+ ('2024-11-01', 'Aizu-Wakamatsu → Niigata', ['l09'], 'Paseo temprano por Aizu, el Akabeko en la estación y, desde las 9:35, la línea Ban\'etsu Oeste por el desfiladero del río Agano hasta Niigata.'),
  ('2024-11-02', 'Niigata', [], 'Bosques de cedros, escalinatas de piedra y un santuario; de noche, el letrero de Niigata.'),
  ('2024-11-03', 'Niigata → Kioto', ['l10', 'l11'], 'A mediodía, otra función de lucha libre en Niigata. Por la tarde, shinkansen hasta Kioto: la ruta por Tokio es la más probable, pero no hay reserva que la confirme.'),
  ('2024-11-04', 'Osaka: NJPW Power Struggle', ['l12', 'l13'], 'Día en Osaka: mañana entre tiendas de manga y, desde la tarde, la función de New Japan Pro-Wrestling en el EDION Arena (entradas 2F reservadas).'),
@@ -107,8 +108,9 @@ CAM = [  # first, last, day, place or leg, label
  (1900, 1943, '2024-10-29', 'hakodate', 'Hakodate al atardecer y Goryōkaku'),
  (1944, 2042, '2024-10-30', 'hakodate', 'Hakodate por la mañana'),
  (2043, 2270, '2024-10-30', 'kakunodate', 'Kakunodate y su estación'),
- (2271, 2379, '2024-10-31', 'morioka', 'Morioka'),
- (2380, 2523, '2024-11-01', 'leg:l08', 'Por la ventana del tren'),
+ (2271, 2353, '2024-10-31', 'morioka', 'Morioka'),
+ (2354, 2379, '2024-10-31', 'aizu', 'Castillo Tsuruga-jō'),
+ (2380, 2523, '2024-11-01', 'leg:l09', 'El río Agano desde el tren'),
  (2524, 2738, '2024-11-02', 'niigata', 'Niigata'),
  (2739, 3106, '2024-11-04', 'osaka', 'NJPW Power Struggle'),
  (3107, 3121, '2024-11-05', 'arashiyama', 'Arashiyama'),
@@ -125,7 +127,7 @@ CAM = [  # first, last, day, place or leg, label
  (4138, 4272, '2024-11-14', 'tokio', 'Tokio y lucha libre'),
 ]
 # approximate start time (JST) of each camera batch, for ordering when no anchor applies
-HINT = {1836:'2024-10-29 00:56',1900:'2024-10-29 16:10',1944:'2024-10-30 07:49',2043:'2024-10-30 15:58',2271:'2024-10-31 06:50',
+HINT = {1836:'2024-10-29 00:56',1900:'2024-10-29 16:10',1944:'2024-10-30 07:49',2043:'2024-10-30 15:58',2271:'2024-10-31 06:50',2354:'2024-10-31 14:22',
         2380:'2024-11-01 10:14',2524:'2024-11-02 11:28',2739:'2024-11-04 14:37',3107:'2024-11-05 11:09',3229:'2024-11-06 08:43',
         3577:'2024-11-06 17:19',3582:'2024-11-06 17:40',3589:'2024-11-07 11:05',3601:'2024-11-07 13:00',3860:'2024-11-10 09:00',
         3886:'2024-11-11 09:03',3978:'2024-11-11 15:20',4041:'2024-11-13 16:38',4138:'2024-11-14 09:06'}
@@ -151,8 +153,9 @@ TL = [
  ('2024-10-29 15:10', 'hakodate', '2024-10-29'), ('2024-10-30 00:00', 'hakodate', '2024-10-30'), ('2024-10-30 10:10', 'leg:l05', '2024-10-30'),
  ('2024-10-30 10:40', 'leg:l06', '2024-10-30'), ('2024-10-30 12:45', 'morioka', '2024-10-30'), ('2024-10-30 14:35', 'leg:l07', '2024-10-30'),
  ('2024-10-30 15:25', 'kakunodate', '2024-10-30'), ('2024-10-30 17:18', 'leg:l07r', '2024-10-30'), ('2024-10-30 18:14', 'morioka', '2024-10-30'),
- ('2024-10-31 00:00', 'morioka', '2024-10-31'), ('2024-11-01 00:00', 'morioka', '2024-11-01'), ('2024-11-01 10:00', 'leg:l08', '2024-11-01'),
- ('2024-11-01 13:00', 'leg:l09', '2024-11-01'), ('2024-11-01 15:30', 'niigata', '2024-11-01'), ('2024-11-02 00:00', 'niigata', '2024-11-02'),
+ ('2024-10-31 00:00', 'morioka', '2024-10-31'), ('2024-10-31 08:20', 'leg:l08', '2024-10-31'), ('2024-10-31 10:45', 'leg:l08b', '2024-10-31'),
+ ('2024-10-31 12:10', 'aizu', '2024-10-31'), ('2024-11-01 00:00', 'aizu', '2024-11-01'), ('2024-11-01 09:35', 'leg:l09', '2024-11-01'),
+ ('2024-11-01 12:50', 'niigata', '2024-11-01'), ('2024-11-02 00:00', 'niigata', '2024-11-02'),
  ('2024-11-03 00:00', 'niigata', '2024-11-03'), ('2024-11-03 15:15', 'leg:l10', '2024-11-03'), ('2024-11-03 17:20', 'leg:l11', '2024-11-03'),
  ('2024-11-03 19:45', 'kioto', '2024-11-03'), ('2024-11-04 00:00', 'kioto', '2024-11-04'), ('2024-11-04 09:00', 'leg:l12', '2024-11-04'),
  ('2024-11-04 09:40', 'osaka', '2024-11-04'), ('2024-11-05 00:00', 'kioto', '2024-11-05'), ('2024-11-05 09:30', 'arashiyama', '2024-11-05'),
@@ -193,7 +196,7 @@ def along(pts, f):
     return pts[-1]
 
 # leg windows in JST for camera photos placed along a route
-LEGWIN = {'l08': ('2024-11-01 10:00', '2024-11-01 13:00'), 'b1': ('2024-11-06 08:30', '2024-11-06 17:00'), 'l25': ('2024-11-11 09:07', '2024-11-11 10:47')}
+LEGWIN = {'l09': ('2024-11-01 09:35', '2024-11-01 12:50'), 'b1': ('2024-11-06 08:30', '2024-11-06 17:00'), 'l25': ('2024-11-11 09:07', '2024-11-11 10:47')}
 
 # ---------- read the folder listing ----------
 seen = set(); photos = []
