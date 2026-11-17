@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nihon 2024 mapa de fotos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;900&display=swap" rel="stylesheet">
+<style>/*LEAFLET_CSS*/</style>
+<style>
+/* Layout: días a la izquierda; a la derecha el mapa con las rutas reales y, debajo, el carrete de fotos del día. */
+:root{
+  --paper:#f3f5f7; --panel:#ffffff; --ink:#18233a; --muted:#5d6b82; --line:#d9dfe7;
+  --rail:#0b7a5c; --hs:#2a4fa3; --urban:#7b6aa8; --bike:#d9731a; --sun:#d7263d; --strip:#151b26;
+  --display:"Zen Old Mincho","Hiragino Mincho ProN",Georgia,serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f1520; --panel:#161e2c; --ink:#e8edf5; --muted:#9aa7bb; --line:#2b364b;
+  --rail:#3ec79c; --hs:#7ea2ff; --urban:#b3a4e6; --bike:#ffa04d; --sun:#ff6b78; --strip:#0a0e15; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --paper:#0f1520; --panel:#161e2c; --ink:#e8edf5; --muted:#9aa7bb; --line:#2b364b;
+  --rail:#3ec79c; --hs:#7ea2ff; --urban:#b3a4e6; --bike:#ffa04d; --sun:#ff6b78; --strip:#0a0e15; color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+button{font:inherit}
+.app{display:grid;grid-template-columns:minmax(300px,380px) 1fr;height:100%}
+.side{display:flex;flex-direction:column;min-height:0;background:var(--panel);border-right:1px solid var(--line)}
+.head{padding:16px 20px 12px;border-bottom:1px solid var(--line)}
+.head h1{font-family:var(--display);font-weight:900;font-size:30px;line-height:1.05;margin:0}
+.head h1 span{color:var(--sun)}
+.head p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.stats{display:flex;gap:18px;margin-top:10px;font-variant-numeric:tabular-nums}
+.stats div{font-size:12px;color:var(--muted)}
+.stats b{display:block;font-size:19px;color:var(--ink);font-weight:700}
+.all{all:unset;cursor:pointer;display:block;padding:9px 20px;font-size:13px;font-weight:700;color:var(--rail);border-bottom:1px solid var(--line)}
+.all:hover{background:color-mix(in srgb,var(--rail) 7%,transparent)}
+.all:focus-visible{outline:2px solid var(--rail);outline-offset:-2px}
+.all.on{color:var(--sun)}
+.days{overflow-y:auto;flex:1;min-height:0;list-style:none;margin:0;padding:0 0 20px}
+.day{border-bottom:1px solid var(--line)}
+.day>button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;width:100%;padding:9px 20px;cursor:pointer}
+.day>button:hover{background:color-mix(in srgb,var(--rail) 7%,transparent)}
+.day>button:focus-visible{outline:2px solid var(--rail);outline-offset:-2px}
+.date{font-variant-numeric:tabular-nums;text-align:center;line-height:1.05}
+.date b{display:block;font-family:var(--display);font-size:21px;font-weight:600}
+.date small{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ttl{font-weight:500;font-size:14.5px}
+.chip{font-size:12px;font-variant-numeric:tabular-nums;padding:2px 9px;border-radius:99px;background:color-mix(in srgb,var(--rail) 14%,transparent);color:var(--rail);font-weight:700;white-space:nowrap}
+.chip.none{background:transparent;color:var(--muted);font-weight:400;border:1px dashed var(--line)}
+.day.on{background:color-mix(in srgb,var(--sun) 6%,transparent);box-shadow:inset 3px 0 0 var(--sun)}
+.day.on .date b{color:var(--sun)}
+.body{display:none;padding:0 20px 14px 80px}
+.day.on .body{display:block}
+.body p{margin:0 0 8px;color:var(--muted);font-size:13.5px;max-width:60ch}
+.trips{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:12.5px}
+.trips li{display:flex;gap:8px;align-items:baseline}
+.trips i{flex:none;width:18px;height:0;border-top:3px solid var(--rail);transform:translateY(-3px)}
+.trips i.hs{border-color:var(--hs)} .trips i.urban{border-color:var(--urban);border-top-width:2px}
+.trips i.bike{border-top:3px dotted var(--bike)} .trips i.ferry,.trips i.bus,.trips i.flight{border-top:2px dashed var(--muted)}
+.trips em{font-style:normal;color:var(--muted)}
+.gap{margin-top:8px;font-size:12.5px;color:var(--muted);border-left:3px solid var(--sun);padding-left:8px}
+.main{display:grid;grid-template-rows:1fr auto;min-height:0;min-width:0}
+.mapwrap{position:relative;min-height:0}
+#map{position:absolute;inset:0;background:#dce7f0}
+.bar{position:absolute;z-index:500;top:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.bar button{font-size:13px;font-weight:500;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.bar button:hover{border-color:var(--rail)}
+.bar button:focus-visible{outline:2px solid var(--rail)}
+.legend{position:absolute;z-index:500;left:56px;top:12px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--muted);display:grid;grid-template-columns:auto auto;gap:3px 14px}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:24px;height:0;border-top:3px solid var(--rail)}
+.legend i.hs{border-color:var(--hs);border-top-width:4px}.legend i.urban{border-color:var(--urban);border-top-width:2px}
+.legend i.bike{border-top:3px dotted var(--bike)}.legend i.fl{border-top:2px dashed var(--muted)}
+.legend i.pr{border-top:3px dashed var(--rail);opacity:.6}
+.note{position:absolute;z-index:500;left:12px;bottom:12px;max-width:340px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sun);padding:9px 12px;border-radius:4px;font-size:12.5px;display:none}
+.leaflet-container{font-family:var(--body)}
+.lbl{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:1px 6px;font-size:12px;font-weight:700;box-shadow:none;white-space:nowrap}
+.lbl:before{display:none}
+.lbl small{font-weight:400;color:var(--muted);font-variant-numeric:tabular-nums}
+.tip{font-size:12.5px}
+.here{width:16px;height:16px;border-radius:50%;background:var(--sun);border:3px solid #fff;box-shadow:0 0 0 2px var(--sun)}
+/* carrete */
+.strip{background:var(--strip);color:#e8edf5;border-top:1px solid #000}
+.strip-head{display:flex;align-items:baseline;gap:12px;padding:8px 14px 0;font-size:12.5px}
+.strip-head b{font-size:13.5px}
+.strip-head span{color:#9aa7bb}
+.strip-head button{margin-left:auto;all:unset;cursor:pointer;color:#9aa7bb;font-size:12.5px;padding:2px 6px;border-radius:4px}
+.strip-head button:hover{color:#fff}
+.strip-head button:focus-visible{outline:2px solid var(--sun)}
+.reel{display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;padding:8px 14px 12px;scroll-snap-type:x proximity;height:132px;align-items:stretch}
+.reel::-webkit-scrollbar{height:8px}.reel::-webkit-scrollbar-thumb{background:#3a4458;border-radius:4px}
+.sep{flex:none;display:flex;flex-direction:column;justify-content:flex-end;width:118px;padding:6px 8px;border-left:3px solid var(--sun);font-size:12px;line-height:1.25;color:#cfd7e3;scroll-snap-align:start}
+.sep b{font-size:12.5px;color:#fff;margin-bottom:2px}
+.sep small{color:#8e9ab0;font-variant-numeric:tabular-nums}
+.th{flex:none;position:relative;width:148px;border:0;padding:0;background:#222b3a;border-radius:3px;overflow:hidden;cursor:zoom-in}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th:focus-visible{outline:2px solid var(--sun);outline-offset:1px}
+.th:hover img{filter:brightness(1.12)}
+.th .play{position:absolute;inset:auto auto 6px 6px;background:rgba(0,0,0,.65);color:#fff;font-size:11px;padding:1px 6px;border-radius:3px}
+.th .tm{position:absolute;right:5px;bottom:5px;background:rgba(0,0,0,.55);color:#fff;font-size:10.5px;padding:0 5px;border-radius:3px;font-variant-numeric:tabular-nums}
+.th.err{display:grid;place-items:center;color:#8e9ab0;font-size:11px}
+/* visor */
+.lb{position:fixed;inset:0;z-index:2000;background:rgba(6,9,14,.94);display:none;grid-template-rows:1fr auto;color:#e8edf5}
+.lb.open{display:grid}
+.lb figure{margin:0;display:grid;place-items:center;min-height:0;padding:16px 64px 0}
+.lb img{max-width:100%;max-height:calc(100vh - 110px);object-fit:contain;display:block;border-radius:2px}
+.lb .cap{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:12px 20px 16px;font-size:13.5px}
+.lb .cap b{font-weight:700}
+.lb .cap span{color:#9aa7bb}
+.lb .cap a{margin-left:auto;color:#fff;font-weight:700;text-decoration:none;border-bottom:2px solid var(--sun)}
+.lb .nav{position:absolute;top:50%;transform:translateY(-50%);all:unset;position:absolute;top:calc(50% - 30px);width:48px;height:60px;display:grid;place-items:center;font-size:30px;color:#fff;cursor:pointer;border-radius:6px}
+.lb .nav:hover{background:rgba(255,255,255,.08)}
+.lb .nav:focus-visible{outline:2px solid var(--sun)}
+.lb .prev{left:8px}.lb .next{right:8px}
+.lb .x{all:unset;position:absolute;top:10px;right:14px;font-size:26px;cursor:pointer;color:#fff;padding:2px 10px;border-radius:6px}
+.lb .x:focus-visible{outline:2px solid var(--sun)}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .main{order:-1;height:72vh}
+  .side{border-right:0;border-top:1px solid var(--line);min-height:60vh}
+  .head h1{font-size:24px}
+  .legend{display:none}
+  .body{padding-left:20px}
+  .reel{height:104px}.th{width:116px}.sep{width:96px}
+  .lb figure{padding:44px 8px 0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <header class="head">
+      <h1>Nihon <span>2024</span></h1>
+      <p>De Hokkaidō a Kyūshū en tren, bici y avión, del 28 de octubre al 16 de noviembre.</p>
+      <div class="stats">
+        <div><b id="s-km">0</b>km recorridos</div>
+        <div><b id="s-stops">0</b>lugares</div>
+        <div><b id="s-photos">0</b>fotos</div>
+      </div>
+    </header>
+    <button class="all on" id="b-trip" type="button">Ver todo el viaje</button>
+    <ol class="days" id="days"></ol>
+  </aside>
+  <section class="main">
+    <div class="mapwrap">
+      <div id="map"></div>
+      <div class="legend" aria-label="Leyenda">
+        <span><i class="hs"></i>Shinkansen</span><span><i class="bike"></i>Bicicleta</span>
+        <span><i></i>Tren</span><span><i class="fl"></i>Avión, ferry, bus</span>
+        <span><i class="urban"></i>Metro y monorriel</span><span><i class="pr"></i>Ruta probable</span>
+      </div>
+      <div class="bar">
+        <button id="b-prev" type="button" aria-label="Día anterior">← Día</button>
+        <button id="b-next" type="button" aria-label="Día siguiente">Día →</button>
+        <button id="b-base" type="button">Mapa: OpenStreetMap</button>
+      </div>
+      <div class="note" id="note">El mapa de fondo no pudo cargarse. Revisa la conexión o cambia de fondo con el botón Mapa.</div>
+    </div>
+    <div class="strip">
+      <div class="strip-head"><b id="r-title">Todo el viaje</b><span id="r-sub"></span><button id="r-start" type="button">Volver al inicio ↺</button></div>
+      <div class="reel" id="reel" tabindex="0" aria-label="Carrete de fotos"></div>
+    </div>
+  </section>
+</div>
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Visor de fotos">
+  <figure><img id="lb-img" alt=""></figure>
+  <div class="cap"><b id="lb-t"></b><span id="lb-s"></span><a id="lb-a" href="#" target="_blank" rel="noopener">Abrir en Drive ↗</a></div>
+  <button class="nav prev" id="lb-p" type="button" aria-label="Foto anterior">‹</button>
+  <button class="nav next" id="lb-n" type="button" aria-label="Foto siguiente">›</button>
+  <button class="x" id="lb-x" type="button" aria-label="Cerrar">×</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+const D=__DATA__;
+const WD=['dom','lun','mar','mié','jue','vie','sáb'], MO=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const fmt=n=>n.toLocaleString('es');
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const thumb=(id,w)=>'https://drive.google.com/thumbnail?id='+id+'&sz=w'+w;
+const dlabel=d=>{const t=new Date(d+'T12:00:00Z');return t.getUTCDate()+' '+MO[t.getUTCMonth()];};
+const LEG={}; D.legs.forEach(l=>LEG[l.id]=l);
+
+// fotos en orden: lista plana para el visor
+const FLAT=[]; D.groups.forEach((g,gi)=>g.ph.forEach(p=>FLAT.push({g:gi,id:p[0],n:p[1],k:p[2],t:p[3],pos:p[4]})));
+const byDay={}; D.groups.forEach((g,gi)=>(byDay[g.day]=byDay[g.day]||[]).push(gi));
+
+// totales
+let km=0; D.legs.forEach(l=>{ if(l.km) km+=l.km; });
+document.getElementById('s-km').textContent=fmt(Math.round(km/10)*10);
+document.getElementById('s-stops').textContent=Object.keys(D.places).length;
+document.getElementById('s-photos').textContent=fmt(FLAT.length);
+
+// ---- lista de días
+const list=document.getElementById('days');
+const MODEN={hs:'Shinkansen',rail:'Tren',urban:'Metro',bike:'Bici',ferry:'Ferry',bus:'Bus',flight:'Avión'};
+D.days.forEach((day,i)=>{
+  const dt=new Date(day.d+'T12:00:00Z'); const gs=byDay[day.d]||[]; const n=gs.reduce((s,gi)=>s+D.groups[gi].ph.length,0);
+  const li=document.createElement('li'); li.className='day'; li.id='d'+i;
+  const btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-expanded','false');
+  btn.innerHTML='<span class="date"><b>'+dt.getUTCDate()+'</b><small>'+WD[dt.getUTCDay()]+' · '+MO[dt.getUTCMonth()]+'</small></span><span class="ttl"></span>'+(n?'<span class="chip">'+fmt(n)+'</span>':'<span class="chip none">sin fotos</span>');
+  btn.querySelector('.ttl').textContent=day.t;
+  const body=document.createElement('div'); body.className='body';
+  const p=document.createElement('p'); p.textContent=day.x; body.appendChild(p);
+  if(day.legs.length){ const ul=document.createElement('ul'); ul.className='trips';
+    day.legs.forEach(id=>{ const l=LEG[id]; const it=document.createElement('li'); it.innerHTML='<i class="'+l.mode+'"></i><span></span>'; it.querySelector('span').textContent=l.label+(l.km?' · '+fmt(Math.round(l.km))+' km':'');
+      if(!l.ok&&l.mode!=='flight'){ const e=document.createElement('em'); e.textContent=' (probable)'; it.querySelector('span').appendChild(e);} ul.appendChild(it); });
+    body.appendChild(ul); }
+  if(!n||['2024-11-07','2024-11-08','2024-11-09'].includes(day.d)){
+    const g=document.createElement('div'); g.className='gap';
+    g.textContent=day.d>='2024-11-07'&&day.d<='2024-11-10'?'Faltan en Drive las fotos de la cámara DSC_3627 a DSC_3859 (tarde del 7 al 10 de noviembre).':(n?'':'No hay fotos de este día en la carpeta.');
+    if(g.textContent) body.appendChild(g);
+  }
+  li.append(btn,body); list.appendChild(li);
+  btn.addEventListener('click',()=>select(i,true));
+});
+
+// ---- mapa
+const map=L.map('map',{zoomSnap:.25,minZoom:4,maxZoom:18,worldCopyJump:false});
+map.attributionControl.setPrefix(false);
+map.setView([36.5,136],5);
+const bases=[
+  ['OpenStreetMap',L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'})],
+  ['satélite',L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Imágenes © Esri, Maxar, Earthstar Geographics'})],
+  ['relieve',L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:17,attribution:'© OpenStreetMap, SRTM · © OpenTopoMap (CC-BY-SA)'})]
+];
+let bi=0, loaded=0;
+bases.forEach(([,t])=>t.on('tileload',()=>{loaded++;document.getElementById('note').style.display='none';}));
+bases[0][1].addTo(map);
+setTimeout(()=>{ if(!loaded) document.getElementById('note').style.display='block'; },7000);
+document.getElementById('b-base').addEventListener('click',e=>{ map.removeLayer(bases[bi][1]); bi=(bi+1)%bases.length; bases[bi][1].addTo(map); e.currentTarget.textContent='Mapa: '+bases[bi][0]; });
+
+const STY={hs:{w:4.5,c:'--hs'},rail:{w:3.2,c:'--rail'},urban:{w:2.2,c:'--urban'},bike:{w:4,c:'--bike',dash:'1 8',cap:'round'},ferry:{w:2.4,c:'--muted',dash:'5 7'},bus:{w:2.4,c:'--muted',dash:'2 6'},flight:{w:2.2,c:'--muted',dash:'9 9'}};
+const legLines={};
+D.legs.forEach(l=>{
+  const s=STY[l.mode];
+  const line=L.polyline(l.pts,{weight:s.w,lineCap:s.cap||'round',lineJoin:'round',dashArray:s.dash||(!l.ok&&l.mode!=='flight'?'10 7':null)}).addTo(map);
+  line.bindTooltip('<b></b>',{sticky:true,className:'tip'});
+  line.setTooltipContent(esc(l.label)+(l.km?' · '+fmt(Math.round(l.km))+' km':'')+(!l.ok&&l.mode!=='flight'?'<br><span style="color:#777">Ruta probable: no hay reserva que la confirme</span>':''));
+  line.on('click',()=>{ const i=D.days.findIndex(d=>d.d===l.day); if(i>=0) select(i,true); });
+  legLines[l.id]=line;
+});
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+// marcadores por lugar
+const placeCount={};
+D.groups.forEach(g=>{ if(!g.at.startsWith('leg:')&&g.at!=='way') placeCount[g.at]=(placeCount[g.at]||0)+g.ph.length; });
+const markers={};
+Object.entries(D.places).forEach(([k,[name,la,lo]])=>{
+  const n=placeCount[k]||0, r=n?6+Math.sqrt(n)*0.62:5;
+  const m=L.circleMarker([la,lo],{radius:r,weight:2,fillOpacity:n?.35:1}).addTo(map);
+  m.bindTooltip(esc(name)+(n?' <small>'+fmt(n)+'</small>':''),{permanent:true,direction:'right',offset:[r+2,0],className:'lbl'});
+  m.on('click',()=>{ const gi=D.groups.findIndex(g=>g.at===k); if(gi>=0){ select(D.days.findIndex(d=>d.d===D.groups[gi].day),true); scrollToGroup(gi);} });
+  markers[k]=m;
+});
+const here=L.marker([0,0],{icon:L.divIcon({className:'',html:'<div class="here"></div>',iconSize:[22,22],iconAnchor:[11,11]}),interactive:false,keyboard:false});
+
+const tripBounds=L.latLngBounds(Object.values(D.places).map(p=>[p[1],p[2]]));
+let cur=-1;
+function paint(){
+  const dayLegs=cur>=0?new Set(D.days[cur].legs):null;
+  const dayPlaces=cur>=0?new Set((byDay[D.days[cur].d]||[]).map(gi=>D.groups[gi].at)):null;
+  D.legs.forEach(l=>{ const s=STY[l.mode], on=!dayLegs||dayLegs.has(l.id);
+    legLines[l.id].setStyle({color:css(s.c),opacity:on?(l.ok||l.mode==='flight'?.95:.6):.18,weight:dayLegs&&on?s.w+1.5:s.w}); if(dayLegs&&on) legLines[l.id].bringToFront(); });
+  Object.entries(markers).forEach(([k,m])=>{ const on=dayPlaces&&dayPlaces.has(k), n=placeCount[k];
+    m.setStyle({color:on?css('--sun'):css('--ink'),fillColor:on?css('--sun'):(n?css('--rail'):css('--panel')),opacity:!dayPlaces||on?1:.45,fillOpacity:n?(!dayPlaces||on?.38:.15):1});
+    const el=m.getTooltip()&&m.getTooltip().getElement(); if(el) el.style.opacity=!dayPlaces||on?1:.45; if(on) m.bringToFront(); });
+}
+
+// ---- carrete
+const reel=document.getElementById('reel');
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ const im=e.target; if(!im.src){ im.src=im.dataset.src; } io.unobserve(im);} }),{root:reel,rootMargin:'0px 600px'});
+let shown=[]; // índices en FLAT del carrete actual
+function buildReel(gis,title,sub){
+  reel.replaceChildren(); shown=[];
+  document.getElementById('r-title').textContent=title; document.getElementById('r-sub').textContent=sub;
+  const frag=document.createDocumentFragment();
+  gis.forEach(gi=>{ const g=D.groups[gi];
+    const s=document.createElement('div'); s.className='sep'; s.id='g'+gi;
+    s.innerHTML='<b></b><span></span><small></small>'; s.querySelector('b').textContent=g.name; s.querySelector('span').textContent=dlabel(g.day); s.querySelector('small').textContent=fmt(g.ph.length)+' fotos';
+    frag.appendChild(s);
+    FLAT.forEach((p,fi)=>{ if(p.g!==gi) return; shown.push(fi);
+      const b=document.createElement('button'); b.type='button'; b.className='th'; b.dataset.fi=fi; b.title=p.n+(p.t?' · '+p.t:'');
+      const im=document.createElement('img'); im.alt=p.n; im.referrerPolicy='no-referrer'; im.dataset.src=thumb(p.id,320); im.decoding='async';
+      im.onerror=()=>{ b.classList.add('err'); b.textContent=p.n; };
+      b.appendChild(im);
+      if(p.k[0]==='v'){ const v=document.createElement('span'); v.className='play'; v.textContent='▶ video'; b.appendChild(v); }
+      if(p.t){ const t=document.createElement('span'); t.className='tm'; t.textContent=p.t; b.appendChild(t); }
+      frag.appendChild(b); io.observe(im);
+    });
+  });
+  reel.appendChild(frag); reel.scrollLeft=0;
+  if(!gis.length){ const s=document.createElement('div'); s.className='sep'; s.style.width='auto'; s.textContent='No hay fotos de este día en Drive.'; reel.appendChild(s); }
+}
+function posOf(fi){ const p=FLAT[fi]; if(p.pos) return p.pos; const at=D.groups[p.g].at; if(D.places[at]) return [D.places[at][1],D.places[at][2]]; return null; }
+reel.addEventListener('pointerover',e=>{ const b=e.target.closest('.th'); if(!b) return; const ps=posOf(+b.dataset.fi); if(ps){ here.setLatLng(ps); if(!map.hasLayer(here)) here.addTo(map);} });
+reel.addEventListener('pointerleave',()=>map.removeLayer(here));
+reel.addEventListener('focusin',e=>{ const b=e.target.closest('.th'); if(!b) return; const ps=posOf(+b.dataset.fi); if(ps){ here.setLatLng(ps); if(!map.hasLayer(here)) here.addTo(map);} });
+reel.addEventListener('click',e=>{ const b=e.target.closest('.th'); if(b) openLB(shown.indexOf(+b.dataset.fi)); });
+reel.addEventListener('wheel',e=>{ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){ reel.scrollLeft+=e.deltaY; e.preventDefault(); } },{passive:false});
+document.getElementById('r-start').addEventListener('click',()=>reel.scrollTo({left:0,behavior:'smooth'}));
+function scrollToGroup(gi){ const el=document.getElementById('g'+gi); if(el) reel.scrollTo({left:el.offsetLeft-14,behavior:'smooth'}); }
+
+// ---- visor
+const lb=document.getElementById('lb'), lbImg=document.getElementById('lb-img'); let li=0, lastFocus=null;
+function openLB(i){ if(i<0) return; li=i; lastFocus=document.activeElement; lb.classList.add('open'); showLB(); document.getElementById('lb-x').focus(); }
+function showLB(){ const fi=shown[li], p=FLAT[fi], g=D.groups[p.g];
+  lbImg.src=thumb(p.id,1600); lbImg.alt=p.n;
+  document.getElementById('lb-t').textContent=(p.k[1]==='c'?'DSC_':'')+p.n+(p.k[0]==='v'?' (video)':'');
+  document.getElementById('lb-s').textContent=g.name+' · '+dlabel(g.day)+(p.t?' · '+p.t:'')+(p.pos?' · posición aproximada en la ruta':'')+' · '+(li+1)+' de '+fmt(shown.length);
+  document.getElementById('lb-a').href='https://drive.google.com/file/d/'+p.id+'/view';
+  const ps=posOf(fi); if(ps){ here.setLatLng(ps); if(!map.hasLayer(here)) here.addTo(map); }
+  const b=reel.querySelector('[data-fi="'+fi+'"]'); if(b) b.scrollIntoView({block:'nearest',inline:'center'});
+  [shown[li+1],shown[li-1]].forEach(n=>{ if(n!=null){ const im=new Image(); im.referrerPolicy='no-referrer'; im.src=thumb(FLAT[n].id,1600);} });
+}
+function closeLB(){ lb.classList.remove('open'); lbImg.removeAttribute('src'); map.removeLayer(here); if(lastFocus) lastFocus.focus(); }
+document.getElementById('lb-p').addEventListener('click',()=>{ if(li>0){li--;showLB();} });
+document.getElementById('lb-n').addEventListener('click',()=>{ if(li<shown.length-1){li++;showLB();} });
+document.getElementById('lb-x').addEventListener('click',closeLB);
+lb.addEventListener('click',e=>{ if(e.target===lb||e.target.tagName==='FIGURE') closeLB(); });
+document.addEventListener('keydown',e=>{ if(!lb.classList.contains('open')) return;
+  if(e.key==='Escape') closeLB(); else if(e.key==='ArrowRight'&&li<shown.length-1){li++;showLB();} else if(e.key==='ArrowLeft'&&li>0){li--;showLB();} });
+let sx=null; lb.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;},{passive:true});
+lb.addEventListener('touchend',e=>{ if(sx==null) return; const dx=e.changedTouches[0].clientX-sx; if(dx<-50&&li<shown.length-1){li++;showLB();} else if(dx>50&&li>0){li--;showLB();} sx=null; });
+
+// ---- selección
+function selectTrip(){
+  if(cur>=0){ const o=document.getElementById('d'+cur); o.classList.remove('on'); o.querySelector('button').setAttribute('aria-expanded','false'); }
+  cur=-1; document.getElementById('b-trip').classList.add('on'); paint();
+  map.flyToBounds(tripBounds,{padding:[40,60],duration:.8});
+  buildReel(D.groups.map((_,i)=>i),'Todo el viaje',fmt(FLAT.length)+' fotos · desplaza para recorrerlas en orden');
+}
+function select(i,move){
+  if(i<0||i>=D.days.length) return;
+  document.getElementById('b-trip').classList.remove('on');
+  if(cur>=0){ const o=document.getElementById('d'+cur); o.classList.remove('on'); o.querySelector('button').setAttribute('aria-expanded','false'); }
+  cur=i; const li=document.getElementById('d'+i); li.classList.add('on'); li.querySelector('button').setAttribute('aria-expanded','true');
+  paint();
+  const day=D.days[i], gis=byDay[day.d]||[];
+  const n=gis.reduce((s,gi)=>s+D.groups[gi].ph.length,0);
+  buildReel(gis,dlabel(day.d)+' · '+day.t,n?fmt(n)+' fotos':'');
+  if(move){
+    let pts=[]; day.legs.forEach(id=>{ const l=LEG[id]; let p=l.pts; if(l.mode==='flight') p=[p[0],p[p.length-1]].filter(x=>x[1]<147); pts=pts.concat(p); });
+    gis.forEach(gi=>{ const at=D.groups[gi].at; if(D.places[at]) pts.push([D.places[at][1],D.places[at][2]]); });
+    if(!pts.length&&i>0) pts=[[D.places.tokio[1],D.places.tokio[2]]];
+    if(pts.length===1) map.flyTo(pts[0],12,{duration:.8}); else if(pts.length) map.flyToBounds(L.latLngBounds(pts),{padding:[60,80],maxZoom:13,duration:.8});
+    li.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+}
+document.getElementById('b-trip').addEventListener('click',selectTrip);
+document.getElementById('b-prev').addEventListener('click',()=>select(cur<=0?0:cur-1,true));
+document.getElementById('b-next').addEventListener('click',()=>select(Math.min(D.days.length-1,cur+1),true));
+new MutationObserver(paint).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',paint);
+selectTrip();
+</script>
+</body>
+</html>
