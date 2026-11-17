@@ -25,7 +25,7 @@
 html,body{height:100%;margin:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
 button{font:inherit}
-.app{display:grid;grid-template-columns:minmax(300px,380px) 1fr;height:100%}
+.app{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);height:100%;overflow:hidden}
 .side{display:flex;flex-direction:column;min-height:0;background:var(--panel);border-right:1px solid var(--line)}
 .head{padding:16px 20px 12px;border-bottom:1px solid var(--line)}
 .head h1{font-family:var(--display);font-weight:900;font-size:30px;line-height:1.05;margin:0}
@@ -40,12 +40,12 @@ button{font:inherit}
 .all.on{color:var(--sun)}
 .days{overflow-y:auto;flex:1;min-height:0;list-style:none;margin:0;padding:0 0 20px}
 .day{border-bottom:1px solid var(--line)}
-.day>button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;width:100%;padding:9px 20px;cursor:pointer}
+.day>button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;width:100%;padding:9px 20px;cursor:pointer}
 .day>button:hover{background:color-mix(in srgb,var(--rail) 7%,transparent)}
 .day>button:focus-visible{outline:2px solid var(--rail);outline-offset:-2px}
 .date{font-variant-numeric:tabular-nums;text-align:center;line-height:1.05}
 .date b{display:block;font-family:var(--display);font-size:21px;font-weight:600}
-.date small{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.date small{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
 .ttl{font-weight:500;font-size:14.5px}
 .chip{font-size:12px;font-variant-numeric:tabular-nums;padding:2px 9px;border-radius:99px;background:color-mix(in srgb,var(--rail) 14%,transparent);color:var(--rail);font-weight:700;white-space:nowrap}
 .chip.none{background:transparent;color:var(--muted);font-weight:400;border:1px dashed var(--line)}
@@ -61,20 +61,26 @@ button{font:inherit}
 .trips i.bike{border-top:3px dotted var(--bike)} .trips i.ferry,.trips i.bus,.trips i.flight{border-top:2px dashed var(--muted)}
 .trips em{font-style:normal;color:var(--muted)}
 .gap{margin-top:8px;font-size:12.5px;color:var(--muted);border-left:3px solid var(--sun);padding-left:8px}
-.main{display:grid;grid-template-rows:1fr auto;min-height:0;min-width:0}
+.main{display:grid;grid-template-rows:minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);min-height:0;min-width:0;overflow:hidden}
 .mapwrap{position:relative;min-height:0}
 #map{position:absolute;inset:0;background:#dce7f0}
 .bar{position:absolute;z-index:500;top:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .bar button{font-size:13px;font-weight:500;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
 .bar button:hover{border-color:var(--rail)}
 .bar button:focus-visible{outline:2px solid var(--rail)}
-.legend{position:absolute;z-index:500;left:56px;top:12px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--muted);display:grid;grid-template-columns:auto auto;gap:3px 14px}
+.legend{position:absolute;z-index:500;right:12px;bottom:26px;background:var(--panel);border:1px solid var(--line);border-radius:6px;font-size:12px;color:var(--muted);max-width:calc(100% - 24px)}
+.legend summary{cursor:pointer;padding:6px 12px;font-weight:700;color:var(--ink);list-style:none}
+.legend summary::-webkit-details-marker{display:none}
+.legend summary::after{content:' ▾';color:var(--muted)}
+.legend[open] summary::after{content:' ▴'}
+.legend summary:focus-visible{outline:2px solid var(--rail)}
+.legend .lg{display:grid;grid-template-columns:auto auto;gap:3px 14px;padding:0 12px 8px}
 .legend span{display:flex;align-items:center;gap:7px}
 .legend i{display:inline-block;width:24px;height:0;border-top:3px solid var(--rail)}
 .legend i.hs{border-color:var(--hs);border-top-width:4px}.legend i.urban{border-color:var(--urban);border-top-width:2px}
 .legend i.bike{border-top:3px dotted var(--bike)}.legend i.fl{border-top:2px dashed var(--muted)}
 .legend i.pr{border-top:3px dashed var(--rail);opacity:.6}
-.note{position:absolute;z-index:500;left:12px;bottom:12px;max-width:340px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sun);padding:9px 12px;border-radius:4px;font-size:12.5px;display:none}
+.note{position:absolute;z-index:501;left:12px;top:60px;max-width:340px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--sun);padding:9px 12px;border-radius:4px;font-size:12.5px;display:none}
 .leaflet-container{font-family:var(--body)}
 .lbl{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:1px 6px;font-size:12px;font-weight:700;box-shadow:none;white-space:nowrap}
 .lbl:before{display:none}
@@ -82,14 +88,16 @@ button{font:inherit}
 .tip{font-size:12.5px}
 .here{width:16px;height:16px;border-radius:50%;background:var(--sun);border:3px solid #fff;box-shadow:0 0 0 2px var(--sun)}
 /* carrete */
-.strip{background:var(--strip);color:#e8edf5;border-top:1px solid #000}
-.strip-head{display:flex;align-items:baseline;gap:12px;padding:8px 14px 0;font-size:12.5px}
+.strip{background:var(--strip);color:#e8edf5;border-top:1px solid #000;min-width:0}
+.strip-head{display:flex;align-items:baseline;gap:12px;padding:8px 14px 0;font-size:12.5px;white-space:nowrap;min-width:0}
+.strip-head b{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.strip-head #r-sub{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .strip-head b{font-size:13.5px}
 .strip-head span{color:#9aa7bb}
 .strip-head button{margin-left:auto;all:unset;cursor:pointer;color:#9aa7bb;font-size:12.5px;padding:2px 6px;border-radius:4px}
 .strip-head button:hover{color:#fff}
 .strip-head button:focus-visible{outline:2px solid var(--sun)}
-.reel{display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;padding:8px 14px 12px;scroll-snap-type:x proximity;height:132px;align-items:stretch}
+.reel{min-width:0;max-width:100%;display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;padding:8px 14px 12px;scroll-snap-type:x proximity;height:132px;align-items:stretch}
 .reel::-webkit-scrollbar{height:8px}.reel::-webkit-scrollbar-thumb{background:#3a4458;border-radius:4px}
 .sep{flex:none;display:flex;flex-direction:column;justify-content:flex-end;width:118px;padding:6px 8px;border-left:3px solid var(--sun);font-size:12px;line-height:1.25;color:#cfd7e3;scroll-snap-align:start}
 .sep b{font-size:12.5px;color:#fff;margin-bottom:2px}
@@ -121,7 +129,9 @@ button{font:inherit}
   .main{order:-1;height:72vh}
   .side{border-right:0;border-top:1px solid var(--line);min-height:60vh}
   .head h1{font-size:24px}
-  .legend{display:none}
+  .legend{bottom:22px}
+  .bar button{padding:6px 10px}
+  .strip-head #r-sub{display:none}
   .body{padding-left:20px}
   .reel{height:104px}.th{width:116px}.sep{width:96px}
   .lb figure{padding:44px 8px 0}
@@ -147,20 +157,23 @@ button{font:inherit}
   <section class="main">
     <div class="mapwrap">
       <div id="map"></div>
-      <div class="legend" aria-label="Leyenda">
+      <details class="legend" id="legend">
+        <summary>Leyenda</summary>
+        <div class="lg">
         <span><i class="hs"></i>Shinkansen</span><span><i class="bike"></i>Bicicleta</span>
         <span><i></i>Tren</span><span><i class="fl"></i>Avión, ferry, bus</span>
         <span><i class="urban"></i>Metro y monorriel</span><span><i class="pr"></i>Ruta probable</span>
-      </div>
+        </div>
+      </details>
       <div class="bar">
         <button id="b-prev" type="button" aria-label="Día anterior">← Día</button>
         <button id="b-next" type="button" aria-label="Día siguiente">Día →</button>
-        <button id="b-base" type="button">Mapa: OpenStreetMap</button>
+        <button id="b-base" type="button" aria-label="Cambiar fondo del mapa">Fondo: calles</button>
       </div>
       <div class="note" id="note">El mapa de fondo no pudo cargarse. Revisa la conexión o cambia de fondo con el botón Mapa.</div>
     </div>
     <div class="strip">
-      <div class="strip-head"><b id="r-title">Todo el viaje</b><span id="r-sub"></span><button id="r-start" type="button">Volver al inicio ↺</button></div>
+      <div class="strip-head"><b id="r-title">Todo el viaje</b><span id="r-sub"></span><button id="r-start" type="button" aria-label="Volver al inicio del carrete">↺ Inicio</button></div>
       <div class="reel" id="reel" tabindex="0" aria-label="Carrete de fotos"></div>
     </div>
   </section>
@@ -199,7 +212,7 @@ D.days.forEach((day,i)=>{
   const dt=new Date(day.d+'T12:00:00Z'); const gs=byDay[day.d]||[]; const n=gs.reduce((s,gi)=>s+D.groups[gi].ph.length,0);
   const li=document.createElement('li'); li.className='day'; li.id='d'+i;
   const btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-expanded','false');
-  btn.innerHTML='<span class="date"><b>'+dt.getUTCDate()+'</b><small>'+WD[dt.getUTCDay()]+' · '+MO[dt.getUTCMonth()]+'</small></span><span class="ttl"></span>'+(n?'<span class="chip">'+fmt(n)+'</span>':'<span class="chip none">sin fotos</span>');
+  btn.innerHTML='<span class="date"><b>'+dt.getUTCDate()+'</b><small>'+MO[dt.getUTCMonth()]+'</small><small>'+WD[dt.getUTCDay()]+'</small></span><span class="ttl"></span>'+(n?'<span class="chip">'+fmt(n)+'</span>':'<span class="chip none">sin fotos</span>');
   btn.querySelector('.ttl').textContent=day.t;
   const body=document.createElement('div'); body.className='body';
   const p=document.createElement('p'); p.textContent=day.x; body.appendChild(p);
@@ -221,7 +234,7 @@ const map=L.map('map',{zoomSnap:.25,minZoom:4,maxZoom:18,worldCopyJump:false});
 map.attributionControl.setPrefix(false);
 map.setView([36.5,136],5);
 const bases=[
-  ['OpenStreetMap',L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'})],
+  ['calles',L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'})],
   ['satélite',L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Imágenes © Esri, Maxar, Earthstar Geographics'})],
   ['relieve',L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{subdomains:'abc',maxZoom:17,attribution:'© OpenStreetMap, SRTM · © OpenTopoMap (CC-BY-SA)'})]
 ];
@@ -229,7 +242,7 @@ let bi=0, loaded=0;
 bases.forEach(([,t])=>t.on('tileload',()=>{loaded++;document.getElementById('note').style.display='none';}));
 bases[0][1].addTo(map);
 setTimeout(()=>{ if(!loaded) document.getElementById('note').style.display='block'; },7000);
-document.getElementById('b-base').addEventListener('click',e=>{ map.removeLayer(bases[bi][1]); bi=(bi+1)%bases.length; bases[bi][1].addTo(map); e.currentTarget.textContent='Mapa: '+bases[bi][0]; });
+document.getElementById('b-base').addEventListener('click',e=>{ map.removeLayer(bases[bi][1]); bi=(bi+1)%bases.length; bases[bi][1].addTo(map); e.currentTarget.textContent='Fondo: '+bases[bi][0]; });
 
 const STY={hs:{w:4.5,c:'--hs'},rail:{w:3.2,c:'--rail'},urban:{w:2.2,c:'--urban'},bike:{w:4,c:'--bike',dash:'1 8',cap:'round'},ferry:{w:2.4,c:'--muted',dash:'5 7'},bus:{w:2.4,c:'--muted',dash:'2 6'},flight:{w:2.2,c:'--muted',dash:'9 9'}};
 const legLines={};
@@ -254,6 +267,17 @@ Object.entries(D.places).forEach(([k,[name,la,lo]])=>{
   m.on('click',()=>{ const gi=D.groups.findIndex(g=>g.at===k); if(gi>=0){ select(D.days.findIndex(d=>d.d===D.groups[gi].day),true); scrollToGroup(gi);} });
   markers[k]=m;
 });
+// etiquetas: se ocultan las que chocan, dando prioridad a los lugares con más fotos
+const order=Object.keys(markers).sort((x,y)=>(placeCount[y]||0)-(placeCount[x]||0));
+function declutter(){
+  const placed=[]; const dp=cur>=0?new Set((byDay[D.days[cur].d]||[]).map(gi=>D.groups[gi].at).concat(D.days[cur].legs.length?[]:[])):null;
+  const ord=dp?order.slice().sort((x,y)=>(dp.has(y)?1:0)-(dp.has(x)?1:0)):order;
+  ord.forEach(k=>{ const el=markers[k].getTooltip()&&markers[k].getTooltip().getElement(); if(!el) return;
+    el.style.visibility='visible'; const r=el.getBoundingClientRect(); const m=markers[k]._path?markers[k]._path.getBoundingClientRect():r;
+    const hit=placed.some(p=>!(r.right<p.left||r.left>p.right||r.bottom<p.top||r.top>p.bottom));
+    if(hit){ el.style.visibility='hidden'; } else placed.push({left:r.left-2,right:r.right+2,top:r.top-1,bottom:r.bottom+1}); });
+}
+map.on('zoomend moveend',declutter);
 const here=L.marker([0,0],{icon:L.divIcon({className:'',html:'<div class="here"></div>',iconSize:[22,22],iconAnchor:[11,11]}),interactive:false,keyboard:false});
 
 const tripBounds=L.latLngBounds(Object.values(D.places).map(p=>[p[1],p[2]]));
@@ -266,6 +290,7 @@ function paint(){
   Object.entries(markers).forEach(([k,m])=>{ const on=dayPlaces&&dayPlaces.has(k), n=placeCount[k];
     m.setStyle({color:on?css('--sun'):css('--ink'),fillColor:on?css('--sun'):(n?css('--rail'):css('--panel')),opacity:!dayPlaces||on?1:.45,fillOpacity:n?(!dayPlaces||on?.38:.15):1});
     const el=m.getTooltip()&&m.getTooltip().getElement(); if(el) el.style.opacity=!dayPlaces||on?1:.45; if(on) m.bringToFront(); });
+  if(typeof declutter==='function') declutter();
 }
 
 // ---- carrete
@@ -328,8 +353,8 @@ lb.addEventListener('touchend',e=>{ if(sx==null) return; const dx=e.changedTouch
 function selectTrip(){
   if(cur>=0){ const o=document.getElementById('d'+cur); o.classList.remove('on'); o.querySelector('button').setAttribute('aria-expanded','false'); }
   cur=-1; document.getElementById('b-trip').classList.add('on'); paint();
-  map.flyToBounds(tripBounds,{padding:[40,60],duration:.8});
-  buildReel(D.groups.map((_,i)=>i),'Todo el viaje',fmt(FLAT.length)+' fotos · desplaza para recorrerlas en orden');
+  map.flyToBounds(tripBounds,{paddingTopLeft:[40,60],paddingBottomRight:[150,40],duration:.8});
+  buildReel(D.groups.map((_,i)=>i),'Todo el viaje',fmt(FLAT.length)+' fotos en orden');
 }
 function select(i,move){
   if(i<0||i>=D.days.length) return;
@@ -344,8 +369,9 @@ function select(i,move){
     let pts=[]; day.legs.forEach(id=>{ const l=LEG[id]; let p=l.pts; if(l.mode==='flight') p=[p[0],p[p.length-1]].filter(x=>x[1]<147); pts=pts.concat(p); });
     gis.forEach(gi=>{ const at=D.groups[gi].at; if(D.places[at]) pts.push([D.places[at][1],D.places[at][2]]); });
     if(!pts.length&&i>0) pts=[[D.places.tokio[1],D.places.tokio[2]]];
-    if(pts.length===1) map.flyTo(pts[0],12,{duration:.8}); else if(pts.length) map.flyToBounds(L.latLngBounds(pts),{padding:[60,80],maxZoom:13,duration:.8});
-    li.scrollIntoView({block:'nearest',behavior:'smooth'});
+    if(pts.length===1) map.flyTo(pts[0],12,{duration:.8}); else if(pts.length) map.flyToBounds(L.latLngBounds(pts),{paddingTopLeft:[50,70],paddingBottomRight:[170,50],maxZoom:13,duration:.8});
+    const box=list.getBoundingClientRect(), r=li.getBoundingClientRect();
+    if(list.scrollHeight>list.clientHeight+2 && (r.top<box.top||r.bottom>box.bottom)) list.scrollTo({top:list.scrollTop+r.top-box.top-8,behavior:'smooth'});
   }
 }
 document.getElementById('b-trip').addEventListener('click',selectTrip);
@@ -354,6 +380,8 @@ document.getElementById('b-next').addEventListener('click',()=>select(Math.min(D
 new MutationObserver(paint).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',paint);
 selectTrip();
+setTimeout(declutter,300);
+if(matchMedia('(min-width:1200px)').matches) document.getElementById('legend').setAttribute('open','');
 </script>
 </body>
 </html>

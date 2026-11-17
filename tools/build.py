@@ -55,7 +55,11 @@ def gc(a, b, n=64):
             while lon - prev > 180: lon -= 360
             while lon - prev < -180: lon += 360
         prev = lon; out.append([round(lat, 4), round(lon, 4)])
-    return out
+    # shift the whole arc by 360° so it lines up with Japan (the endpoint nearest 135°E)
+    ends = [out[0][1], out[-1][1]]
+    ref = min(ends, key=lambda x: min(abs(x - 135 + k * 360) for k in (-1, 0, 1)))
+    k = round((135 - ref) / 360) * 360
+    return [[p[0], round(p[1] + k, 4)] for p in out]
 
 HND, KMJ, ORD, LAX = [35.5494, 139.7798], [32.8373, 130.8551], [41.9786, -87.9048 + 360], [33.9416, -118.4085 + 360]
 def clip_east(pts, maxlon=150.5):
